@@ -1,0 +1,57 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.overlay:hover {
+  cursor: pointer;
+}
+
+.modal {
+  position: absolute;
+  padding: 10px;
+  max-width: 750px;
+  width: 100%;
+  background-color: hsla(0, 0%, 100%, 0.5);
+  border-radius: 10px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal:hover {
+  cursor: auto;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 2px;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  scale: 1;
+  transition: scale var(--transition);
+}
+
+.closeBtn:hover {
+  scale: 1.2;
+}
+
+.modalImage {
+  object-fit: cover;
+}
+
+.modalText {
+  position: absolute;
+  padding: 10px 20px;
+  left: 10;
+  bottom: 10px;
+  background-color: rgb(94, 94, 94);
+  color: blanchedalmond;
+}
