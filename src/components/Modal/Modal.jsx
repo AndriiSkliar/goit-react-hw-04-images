@@ -1,38 +1,32 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import css from './Modal.module.css'
 
-export default class Modal extends Component {
-  state = {
+export const Modal = ({closeModal, modalData, textImage}) => {
 
-  };
+  useEffect(() => {
+    const handleKeyDown = e => {
+      if (e.code === 'Escape') {
+        closeModal();
+      }
+    };
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
-  }
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-    document.body.style.overflow = 'auto';
-  }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'auto';
+    };
+  }, [closeModal]);
 
-  handleOverlayClick = event => {
-    if (event.target === event.currentTarget) {
-      this.props.closeModal();
+  const handleOverlayClick = e => {
+    if (e.target === e.currentTarget) {
+      closeModal();
     }
   };
-
-  handleKeyDown = event => {
-    if (event.code === 'Escape') {
-      this.props.closeModal();
-    }
-  };
-
-  render() {
-    const { closeModal, modalData, textImage } = this.props;
 
     return (
-      <div onClick={this.handleOverlayClick} className={css.overlay}>
+      <div onClick={handleOverlayClick} className={css.overlay}>
         <div className={css.modal}>
           <button onClick={closeModal} className={css.closeBtn}>
           ❌
@@ -42,5 +36,4 @@ export default class Modal extends Component {
         </div>
       </div>
     );
-  }
 }

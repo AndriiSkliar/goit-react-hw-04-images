@@ -1,100 +1,75 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from 'react';
 import { fetchImagesWithQuery } from './Api/api'
 import { Searchbar } from "./Searchbar/Searchbar";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { Button } from "./Button/Button";
 import { Loader } from "./Loader/Loader";
 import { Error } from "./Error/Error";
-import Modal from "./Modal/Modal";
+import { Modal } from "./Modal/Modal";
 
-const INITIAL_STATE = {
-  data: null,
-  page: 1,
-  baseInputValue: '',
+export const App = () => {
+  const [data, setData] = useState([])
+  const [page, setPage] = useState(1)
+  const [value, setValue] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [isOpenModal, setIsOpenModal] = useState(false)
+  const [modalData, setModalData] = useState(null)
+  const [textImage, setTextImage] = useState(null)
 
-  isLoading: false,
-  error: null,
+  useEffect(() => {
+    if (!value) return;
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedData = await fetchImagesWithQuery(value, page);
+        setData((prevData) => [...prevData, ...fetchedData]);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  isOpenModal: false,
-  modalData: null,
-  textImage: null,
-};
+    fetchData();
+  }, [value, page]);
 
-export class App extends Component {
-  state = { ...INITIAL_STATE };
+  const handleSubmit = query => {
+    const trimmedQuery = query.trim();
 
-  async fetchData() {
-    const { baseInputValue, page } = this.state;
-    try {
-      this.setState({ isLoading: true, });
-      const data = await fetchImagesWithQuery(baseInputValue, page);
-      this.setState((prevState) => ({
-        data: prevState.data ? prevState.data.concat(data) : data,
-        page: prevState.page + 1,
-      }));
-    } catch (error) {
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({
-        isLoading: false,
-      });
+    if (trimmedQuery === value) {
+      return;
     }
-  }
 
-  componentDidUpdate(_, prevState) {
-    const { baseInputValue } = this.state;
-    const checkBeforeRequest = baseInputValue !== prevState.baseInputValue && baseInputValue !== INITIAL_STATE.baseInputValue;
-
-    if (checkBeforeRequest) {
-      this.setState({ data: null, page: 1 }, () => {
-        this.fetchData();
-      });
-    }
-  }
-
-  handleSubmit = query => {
-    const baseInputValue = query.trim();
-    this.setState({ baseInputValue });
+    setData([]);
+    setValue(trimmedQuery);
+    setPage(1);
   };
 
-  handleLoadMore = () => {
-    this.fetchData();
+  const handleLoadMore = () => {
+    setPage((prevPage) => prevPage + 1);
   };
 
-  openModal = ({ largeImageURL, tags }) => {
-    this.setState({
-      isOpenModal: true,
-      modalData: largeImageURL,
-      textImage: tags,
-    });
+  const openModal = ({ largeImageURL, tags }) => {
+    setIsOpenModal(true)
+    setModalData(largeImageURL)
+    setTextImage(tags)
   };
 
-  closeModal = () => {
-    this.setState({
-      isOpenModal: false,
-      modalData: null,
-    });
+  const closeModal = () => {
+    setIsOpenModal(false);
+    setModalData(null);
+    setTextImage(null);
   };
 
-  render() {
-    const { data, isLoading, error, isOpenModal, modalData, textImage } = this.state;
-
-    return (
+  return (
       <div className="container">
-        <Searchbar onSubmit={this.handleSubmit} />
-        {error !== null && (
-          <Error error={error} />
-        )}
+        <Searchbar onSubmit={handleSubmit} />
+        {error && <Error error={error} />}
         {isLoading && <Loader />}
-        {data && <ImageGallery data={data} openModal={this.openModal}/>}
-        {data && data.length > 11 && (
-          <Button onClick={this.handleLoadMore}>Load More</Button>
-        )}
-        {isOpenModal && (
-          <Modal closeModal={this.closeModal} modalData={modalData} textImage={textImage} />
-        )}
+        {data && data.length > 0 && <ImageGallery data={data} openModal={openModal} />}
+        {data && data.length > 11 && <Button onClick={handleLoadMore}>Load More</Button>}
+        {isOpenModal && <Modal closeModal={closeModal} modalData={modalData} textImage={textImage} />}
       </div>
     )
-  }
 }
-
